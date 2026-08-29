@@ -7,7 +7,7 @@ from .sqlite_store import SQLiteLearnerRepository
 from .config import load_settings
 
 settings=load_settings()
-service=StudyCheckService(SQLiteLearnerRepository('studycheck.db'))
+service=StudyCheckService(SQLiteLearnerRepository(settings.db_path))
 
 class Handler(BaseHTTPRequestHandler):
     def _send(self,status,payload):
@@ -15,7 +15,7 @@ class Handler(BaseHTTPRequestHandler):
     def _body(self):
         try:
             size=int(self.headers.get('Content-Length','0') or 0)
-            if size>10*1024*1024: raise APIError(413,'body_too_large','request body too large')
+            if size>settings.max_body_bytes: raise APIError(413,'body_too_large','request body too large')
             return json.loads(self.rfile.read(size))
         except APIError: raise
         except (ValueError,json.JSONDecodeError) as exc: raise APIError(400,'invalid_json','request body must be valid JSON') from exc
