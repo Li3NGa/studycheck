@@ -4,12 +4,13 @@ from http.server import BaseHTTPRequestHandler,HTTPServer
 from .api import StudyCheckService
 from .http_api import APIError,daily_queue,review
 from .store import MemoryLearnerRepository
+from .config import load_settings
 
 service=StudyCheckService(MemoryLearnerRepository())
 
 class Handler(BaseHTTPRequestHandler):
     def _send(self,status,payload):
-        body=json.dumps(payload,ensure_ascii=False,default=str).encode(); self.send_response(status); self.send_header('Content-Type','application/json; charset=utf-8'); self.send_header('Content-Length',str(len(body))); self.end_headers(); self.wfile.write(body)
+        body=json.dumps(payload,ensure_ascii=False,default=str).encode(); self.send_response(status); self.send_header('Content-Type','application/json; charset=utf-8'); self.send_header('Content-Length',str(len(body))); self.send_header('Cache-Control','no-store'); self.end_headers(); self.wfile.write(body)
     def _body(self):
         try:return json.loads(self.rfile.read(int(self.headers.get('Content-Length','0')) or 0))
         except (ValueError,json.JSONDecodeError):raise APIError(400,'invalid_json','request body must be valid JSON')
@@ -26,4 +27,5 @@ class Handler(BaseHTTPRequestHandler):
             return self._send(404,{"error":"not_found"})
         except APIError as e:return self._send(e.status,{"error":e.code,"message":e.message})
 
-def run(host='127.0.0.1',port=8001):HTTPServer((host,port),Handler).serve_forever()
+def run(host=None,port=None):
+    settings=load_settings(); HTTPServer((host or settings.host,port or settings.port),Handler).serve_forever()
