@@ -1,7 +1,9 @@
 from __future__ import annotations
 from dataclasses import dataclass
 from enum import Enum
+from pathlib import Path
 import re
+from .document_parser import extract_text
 
 class Mastery(str,Enum): NEW='new'; LEARNING='learning'; MASTERED='mastered'
 
@@ -52,3 +54,7 @@ def grade_answer(progress:Progress,answer:str,expected:str)->dict:
 def learning_cycle(text:str)->dict:
     points=extract_knowledge(text); practice=build_practice(points)
     return {'knowledge_points':[p.__dict__ for p in points],'practice':[p.__dict__ for p in practice],'total':len(points)}
+
+def learning_cycle_from_file(path:str|Path,max_bytes:int=20_000_000)->dict:
+    """Run the same deterministic learning pipeline against TXT/PDF/DOCX input."""
+    return learning_cycle(extract_text(path,max_bytes))
