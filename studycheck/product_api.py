@@ -13,12 +13,15 @@ def content_summary(content)->dict:
 def ingest_material(service: StudyCheckService, user_id: str, path: str | Path) -> dict:
     if not user_id or not user_id.strip():
         raise ValueError('user_id is required')
+    content = create_content(path)
     result = learning_cycle_from_file(path)
     state = service.get_or_create(user_id)
     if hasattr(state, 'total_knowledge'):
         state.total_knowledge = max(state.total_knowledge, result['total'])
     service.repository.save(state)
     result['user_id'] = user_id
+    result['content_id'] = content.content_id
+    result['title'] = content.title
     return result
 
 def review_answer(service: StudyCheckService, user_id: str, knowledge_point: str, correct: bool, transfer: bool = False) -> dict:
