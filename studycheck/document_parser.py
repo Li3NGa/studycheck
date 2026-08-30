@@ -6,14 +6,16 @@ SUPPORTED={'.txt','.pdf','.docx'}
 
 def extract_text(path:str|Path,max_bytes:int=20_000_000)->str:
     p=Path(path)
-    if not p.is_file(): raise DocumentParseError('document not found')
     if max_bytes<=0: raise ValueError('max_bytes must be positive')
+    if not p.is_file(): raise DocumentParseError('document not found')
     if p.stat().st_size>max_bytes: raise DocumentParseError('document exceeds size limit')
     suffix=p.suffix.lower()
     if suffix not in SUPPORTED: raise DocumentParseError(f'unsupported document type: {suffix}')
-    if suffix=='.txt': text=p.read_text(encoding='utf-8')
-    elif suffix=='.pdf': text=_pdf(p)
-    else: text=_docx(p)
+    try:
+        if suffix=='.txt': text=p.read_text(encoding='utf-8')
+        elif suffix=='.pdf': text=_pdf(p)
+        else: text=_docx(p)
+    except UnicodeDecodeError as exc: raise DocumentParseError('text document must be UTF-8') from exc
     if not text.strip(): raise DocumentParseError('document is empty')
     return text
 
