@@ -27,7 +27,7 @@ def daily_queue(service:StudyCheckService,user_id:str,limit:int=20,authorization
 def progress(service:StudyCheckService,user_id:str,authorization:str|None=None,sessions:AuthSessionStore|None=None)->dict[str,Any]:
     _check_user(user_id,authorization,sessions)
     state=service.get_or_create(user_id)
-    return {'user_id':user_id,'session_count':state.session_count,'total_reviews':state.total_reviews,'knowledge_points':len(state.graph.nodes)}
+    return {'user_id':user_id,'session_count':state.session_count,'total_reviews':state.total_reviews,'knowledge_points':len(state.graph.evidence)}
 
 def review(service:StudyCheckService,payload:dict[str,Any],authorization:str|None=None,sessions:AuthSessionStore|None=None)->dict[str,Any]:
     if not isinstance(payload,dict) or not payload.get('user_id') or not payload.get('knowledge_point') or not isinstance(payload.get('correct'),bool): raise APIError(400,'invalid_review','user_id, knowledge_point and boolean correct are required')
