@@ -2,7 +2,7 @@ from __future__ import annotations
 import json
 from http.server import BaseHTTPRequestHandler,HTTPServer
 from .api import StudyCheckService
-from .http_api import APIError,daily_queue,review
+from .http_api import APIError,daily_queue,progress,review
 from .sqlite_store import SQLiteLearnerRepository
 from .config import load_settings
 
@@ -24,6 +24,7 @@ class Handler(BaseHTTPRequestHandler):
             if self.path=='/health':return self._send(200,{"status":"ok","service":"studycheck"})
             parts=self.path.split('/')
             if len(parts)==5 and parts[:4]==['','api','v1','users'] and parts[4]:return self._send(200,daily_queue(service,parts[4]))
+            if len(parts)==6 and parts[:5]==['','api','v1','users',parts[4]] and parts[5]=='progress':return self._send(200,progress(service,parts[4]))
             return self._send(404,{"error":"not_found"})
         except APIError as e:return self._send(e.status,{"error":e.code,"message":e.message})
     def do_POST(self):
