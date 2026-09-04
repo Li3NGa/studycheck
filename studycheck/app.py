@@ -3,6 +3,7 @@ import json
 from http.server import BaseHTTPRequestHandler,HTTPServer
 from .api import StudyCheckService
 from .http_api import APIError,daily_queue,progress,review
+from .upload_api import ingest_uploaded_material
 from .sqlite_store import SQLiteLearnerRepository
 from .config import load_settings
 
@@ -29,6 +30,7 @@ class Handler(BaseHTTPRequestHandler):
         except APIError as e:return self._send(e.status,{"error":e.code,"message":e.message})
     def do_POST(self):
         try:
+            if self.path=='/api/v1/materials/upload':return self._send(201,ingest_uploaded_material(service,self._body()))
             if self.path=='/api/v1/reviews':return self._send(200,review(service,self._body()))
             return self._send(404,{"error":"not_found"})
         except APIError as e:return self._send(e.status,{"error":e.code,"message":e.message})
