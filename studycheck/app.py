@@ -4,6 +4,7 @@ from http.server import BaseHTTPRequestHandler,HTTPServer
 from .api import StudyCheckService
 from .http_api import APIError,daily_queue,progress,review
 from .upload_api import ingest_uploaded_material
+from .plan_api import current_plan
 from .sqlite_store import SQLiteLearnerRepository
 from .config import load_settings
 
@@ -23,6 +24,7 @@ class Handler(BaseHTTPRequestHandler):
     def do_GET(self):
         try:
             if self.path=='/health':return self._send(200,{"status":"ok","service":"studycheck"})
+            if self.path=='/api/v1/plan':return self._send(200,current_plan(service))
             parts=self.path.split('/')
             if len(parts)==5 and parts[:4]==['','api','v1','users'] and parts[4]:return self._send(200,daily_queue(service,parts[4]))
             if len(parts)==6 and parts[:5]==['','api','v1','users',parts[4]] and parts[5]=='progress':return self._send(200,progress(service,parts[4]))
